@@ -1,0 +1,7 @@
+com\equifax\c2o\api\mirrorffid\exception\GlobalExceptionHandler$ErrorResponse.class
+com\equifax\c2o\api\mirrorffid\controller\ApiRequestController.class
+com\equifax\c2o\api\mirrorffid\model\C2oApiRequest.class
+com\equifax\c2o\api\mirrorffid\exception\GlobalExceptionHandler.class
+com\equifax\c2o\api\mirrorffid\model\C2oContract.class
+com\equifax\c2o\api\mirrorffid\MirrorFfidHandlerApplication.class
+com\equifax\c2o\api\mirrorffid\service\ApiRequestService.class
