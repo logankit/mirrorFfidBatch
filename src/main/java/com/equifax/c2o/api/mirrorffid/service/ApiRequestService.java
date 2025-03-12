@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -72,6 +73,40 @@ public class ApiRequestService {
         } catch (Exception e) {
             logger.error("Error retrieving queued request IDs", e);
             throw new RuntimeException("Error retrieving queued request IDs: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Updates the status of specified API requests to '304'.
+     * This is typically used for requests that need to be marked as processed
+     * in a specific way in the mirrorFFID system.
+     *
+     * @param requestIds List of request IDs to update
+     * @return The number of records updated
+     */
+    @Transactional
+    public int updateRequestStatusTo304(List<Long> requestIds) {
+        if (requestIds == null || requestIds.isEmpty()) {
+            logger.info("No request IDs provided for status update to 304");
+            return 0;
+        }
+        
+        try {
+            String sql = "UPDATE C2O_API_REQUEST " +
+                        "SET REQUEST_STATUS = '304', " +
+                        "LAST_UPDATED_DATE = CURRENT_TIMESTAMP " +
+                        "WHERE REQUEST_ID IN (:requestIds)";
+            
+            Query query = entityManager.createNativeQuery(sql);
+            query.setParameter("requestIds", requestIds);
+            
+            int updatedCount = query.executeUpdate();
+            logger.info("Updated {} requests to status 304", updatedCount);
+            
+            return updatedCount;
+        } catch (Exception e) {
+            logger.error("Error updating request status to 304", e);
+            throw new RuntimeException("Error updating request status to 304: " + e.getMessage(), e);
         }
     }
 }
