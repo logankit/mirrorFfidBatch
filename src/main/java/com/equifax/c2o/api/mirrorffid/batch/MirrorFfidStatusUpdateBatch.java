@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.equifax.c2o.api.mirrorffid.service.ApiRequestService;
+import com.equifax.c2o.api.mirrorffid.util.CommonConstants;
 
 /**
  * Batch job that runs every 30 minutes to update mirrorFFID request status
@@ -40,7 +41,7 @@ public class MirrorFfidStatusUpdateBatch {
      */
     @Scheduled(cron = "0 0/30 * * * ?")
     public void updateRequestStatus() {
-        logger.info("Starting scheduled job to update request status to 304");
+        logger.info("Starting scheduled job to update request status to {}", CommonConstants.Status.PROCESSED);
         
         try {
             // Get all queued request IDs from the service
@@ -51,13 +52,13 @@ public class MirrorFfidStatusUpdateBatch {
                 return;
             }
             
-            logger.info("Found {} requests to update to status 304", requestIds.size());
+            logger.info("Found {} requests to update to status {}", requestIds.size(), CommonConstants.Status.PROCESSED);
             
             // Update the status of all retrieved requests to 304
             int updatedCount = apiRequestService.updateRequestStatusTo304(requestIds);
             
-            logger.info("Successfully updated {} out of {} requests to status 304", 
-                    updatedCount, requestIds.size());
+            logger.info("Successfully updated {} out of {} requests to status {}", 
+                    updatedCount, requestIds.size(), CommonConstants.Status.PROCESSED);
             
             if (updatedCount < requestIds.size()) {
                 logger.warn("Not all requests were updated. Expected: {}, Actual: {}", 
@@ -67,6 +68,6 @@ public class MirrorFfidStatusUpdateBatch {
             logger.error("Error in scheduled request status update job", e);
         }
         
-        logger.info("Completed scheduled job to update request status to 304");
+        logger.info("Completed scheduled job to update request status to {}", CommonConstants.Status.PROCESSED);
     }
 }
