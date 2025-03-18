@@ -37,7 +37,7 @@ public class ApiRequestControllerTest {
         
         when(apiRequestService.getQueuedRequestIds()).thenReturn(mockRequestIds);
 
-        mockMvc.perform(get("/api/mirror-ffid/queued-requests"))
+        mockMvc.perform(get("/queued-requests"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$[0]").value(1))
                .andExpect(jsonPath("$[1]").value(2))
@@ -48,7 +48,7 @@ public class ApiRequestControllerTest {
     public void testGetQueuedRequests_NoResults() throws Exception {
         when(apiRequestService.getQueuedRequestIds()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/api/mirror-ffid/queued-requests"))
+        mockMvc.perform(get("/queued-requests"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$").isArray())
                .andExpect(jsonPath("$").isEmpty());
@@ -56,8 +56,46 @@ public class ApiRequestControllerTest {
 
     @Test
     public void testHealthCheck() throws Exception {
-        mockMvc.perform(get("/api/mirror-ffid/health"))
+        mockMvc.perform(get("/health"))
                .andExpect(status().isOk())
                .andExpect(content().string("Mirror FFID Handler Service is running"));
+    }
+    
+    @Test
+    public void testProcessRequests_Success() throws Exception {
+        List<Long> mockRequestIds = Arrays.asList(1L, 2L, 3L);
+        when(apiRequestService.getQueuedRequestIds()).thenReturn(mockRequestIds);
+        when(apiRequestService.updateRequestStatusTo304(mockRequestIds)).thenReturn(3);
+        
+        mockMvc.perform(get("/process-requests"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.status").value("success"))
+               .andExpect(jsonPath("$.message").value("Successfully processed requests"))
+               .andExpect(jsonPath("$.requestsFound").value(3))
+               .andExpect(jsonPath("$.requestsProcessed").value(3))
+               .andExpect(jsonPath("$.requestIds[0]").value(1))
+               .andExpect(jsonPath("$.requestIds[1]").value(2))
+               .andExpect(jsonPath("$.requestIds[2]").value(3));
+    }
+    
+    @Test
+    public void testProcessRequests_NoRequests() throws Exception {
+        when(apiRequestService.getQueuedRequestIds()).thenReturn(Collections.emptyList());
+        
+        mockMvc.perform(get("/process-requests"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.status").value("success"))
+               .andExpect(jsonPath("$.message").value("No requests found for processing"))
+               .andExpect(jsonPath("$.requestsFound").value(0))
+               .andExpect(jsonPath("$.requestsProcessed").value(0));
+    }
+    
+    @Test
+    public void testTestEndpoint() throws Exception {
+        mockMvc.perform(get("/test"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.status").value("success"))
+               .andExpect(jsonPath("$.message").value("Test endpoint is working"))
+               .andExpect(jsonPath("$.timestamp").isNumber());
     }
 }
